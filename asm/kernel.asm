@@ -88,9 +88,12 @@ InitPIC:                         ; Programmable Interrupt Controller ???
     retf
 
 KernelEntry:
+    xor ax, ax
+    mov ss, ax
+
     mov rsp,0x200000    ; adjust stack pointer
     call KMain
-
+    sti
 
 End:
     hlt
