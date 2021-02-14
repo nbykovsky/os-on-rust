@@ -1,6 +1,8 @@
 // #![allow(unused_assignments, dead_code)]
 // #![no_std] // don't link the Rust standard library
 // #![no_main] // disable all Rust-level entry points
+// #![feature(lang_items, llvm_asm)]
+
 // use core::panic::PanicInfo;
 
 const IDT_START_ADDRESS: u64 = 0x11000;
@@ -35,7 +37,7 @@ extern "C" {
     fn read_isr() -> u8;
 }
 
-#[repr(C, packed)]
+#[repr(packed)]
 struct IdtEntry {
     low: u16,
     selector: u16,
@@ -47,14 +49,14 @@ struct IdtEntry {
 }
 
 
-#[repr(C, packed)]
+#[repr(packed)]
 struct IdtPrt {
     limit: u16,
     addr: u64
 }
 
 fn init_idt_entry(index: usize, handler_address: u64) {
-    const IDT_DESCRIPTOR_SIZE: u64 = 8;
+    const IDT_DESCRIPTOR_SIZE: u64 = 16;
 
     let descriptor_address = IDT_START_ADDRESS + (
         IDT_DESCRIPTOR_SIZE * (index as u64)
@@ -75,12 +77,13 @@ fn init_idt_entry(index: usize, handler_address: u64) {
 
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn create_idt_table() {
 
     const IDT_DESCRIPTORS_AMOUNT: usize = 256;
 
     for index in 0..IDT_DESCRIPTORS_AMOUNT {
-        init_idt_entry(index, (halt as *const ()) as u64);
+        init_idt_entry(index, (vector32 as *const ()) as u64);
     }
     init_idt_entry(0, (vector0 as *const ()) as u64);
     init_idt_entry(1, (vector1 as *const ()) as u64);
@@ -109,34 +112,38 @@ pub fn create_idt_table() {
             addr: IDT_START_ADDRESS
         }
     }
+    unsafe {
+        load_idt(&*(IDT_REGISTER_ADDRESS as *mut IdtPrt));
+    }
+    // unsafe {llvm_asm!("lidt ($0)" :: "r" (IDT_REGISTER_ADDRESS));}
 
 }
 
 
-#[repr(C)]
+#[repr(C, packed)]
 pub struct TrapFrame {
-    r15: u64,
-    r14: u64,
-    r13: u64,
-    r12: u64,
-    r11: u64,
-    r10: u64,
-    r9: u64,
-    r8: u64,
-    rbp: u64,
-    rdi: u64,
-    rsi: u64,
-    rdx: u64,
-    rcx: u64,
-    rbx: u64,
-    rax: u64,
-    trapno: u64,
-    errorcode: u64,
-    rip: u64,
-    cs: u64,
-    rflags: u64,
-    rsp: u64,
-    ss: u64
+    r15: i64,
+    r14: i64,
+    r13: i64,
+    r12: i64,
+    r11: i64,
+    r10: i64,
+    r9: i64,
+    r8: i64,
+    rbp: i64,
+    rdi: i64,
+    rsi: i64,
+    rdx: i64,
+    rcx: i64,
+    rbx: i64,
+    rax: i64,
+    trapno: i64,
+    errorcode: i64,
+    rip: i64,
+    cs: i64,
+    rflags: i64,
+    rsp: i64,
+    ss: i64
 }
 
 
@@ -150,7 +157,7 @@ pub extern "C" fn handler(tf: &TrapFrame) {
             let isr_value = unsafe {read_isr()};
 
             if isr_value&(1<<7)!=0 {
-                unsafe {eoi();};
+                unsafe {eoi()};
             }
         }
         _ => loop {}

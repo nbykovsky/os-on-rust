@@ -9,21 +9,21 @@ use core::panic::PanicInfo;
 
 
 #[no_mangle] // don't mangle the name of this function
-pub extern "C" fn KMain() -> ! {
+pub extern "C" fn KMain() {
     // this function is the entry point, since the linker looks for a function
     // named `_start` by default
 
 
     trap::create_idt_table();
 
-    let vga_buffer = 0xb8000 as *mut u8;
-    unsafe {
-        *vga_buffer.offset(0) = 'Z' as u8;
-        *vga_buffer.offset(1) = 0xa;
-    }
+    // let vga_buffer = 0xb8000 as *mut u8;
+    // unsafe {
+    //     *vga_buffer.offset(0) = 'Z' as u8;
+    //     *vga_buffer.offset(1) = 0xa;
+    // }
 
 
-    loop {}
+    // loop {}
 
 
 }
