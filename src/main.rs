@@ -4,7 +4,7 @@
 
 mod trap;
 
-use core::panic::PanicInfo;
+// use core::panic::PanicInfo;
 
 
 
@@ -29,9 +29,9 @@ pub extern "C" fn KMain() {
 }
 
 // This function is called on panic.
-#[panic_handler]
-#[cfg(not(test))] 
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
-}
+// #[panic_handler]
+// #[cfg(not(test))] 
+// fn panic(_info: &PanicInfo) -> ! {
+//     loop {}
+// }
 

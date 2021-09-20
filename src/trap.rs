@@ -1,9 +1,9 @@
-// #![allow(unused_assignments, dead_code)]
-// #![no_std] // don't link the Rust standard library
-// #![no_main] // disable all Rust-level entry points
+#![allow(unused_assignments, dead_code)]
+#![no_std] // don't link the Rust standard library
+#![no_main] // disable all Rust-level entry points
 // #![feature(lang_items, llvm_asm)]
 
-// use core::panic::PanicInfo;
+use core::panic::PanicInfo;
 
 const IDT_START_ADDRESS: u64 = 0x11000;
 const IDT_REGISTER_ADDRESS: u64 = 0x11800;
@@ -163,4 +163,12 @@ pub extern "C" fn handler(tf: &TrapFrame) {
         _ => loop {}
     }
     
+}
+
+
+// This function is called on panic.
+#[panic_handler]
+#[cfg(not(test))] 
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
 }
