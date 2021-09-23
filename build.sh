@@ -2,11 +2,8 @@ nasm -f bin -o boot.bin asm/boot.asm
 nasm -f bin -o loader.bin asm/loader.asm
 nasm -f elf64 -o kernel.o asm/kernel.asm
 nasm -f elf64 -o trapa.o asm/trap.asm
-rustc src/main.rs --emit obj  -C link-arg=-nostartfiles -C panic=abort -O 
-rustc src/trap.rs --emit obj  -C link-arg=-nostartfiles -C panic=abort -O
 cargo rustc -- --emit obj  -C link-arg=-nostartfiles -C no-redzone=yes -O
 ld -nostdlib -T link.lds -o kernel kernel.o trapa.o $(find target/debug/deps -name 'op_system_rs*.o') 
-# ld --allow-multiple-definition -nostdlib  -T link.lds -o kernel kernel.o main.o  trapa.o trap.o
 objcopy -O binary kernel kernel.bin 
 dd if=boot.bin of=boot.img bs=512 count=1 conv=notrunc
 dd if=loader.bin of=boot.img bs=512 count=5 seek=1 conv=notrunc

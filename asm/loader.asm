@@ -9,7 +9,7 @@ start:
     cmp eax,0x80000001    ; if eax < 0x80000001 thene cpuid doesn't support 0x80000001 input value
     jb NotSupport
 
-    mov eax,0x80000001
+    mov eax,0x80000001    ; checking that processor support long mode and 1 GB page 
     cpuid                 ; cpuid returns processor features in eax register
     test edx,(1<<29)      ; if 29-th bit is set then long mode is supported
     jz NotSupport

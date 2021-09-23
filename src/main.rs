@@ -14,13 +14,13 @@ pub extern "C" fn KMain() {
     // named `_start` by default
 
 
-    trap::create_idt_table();
+    // trap::create_idt_table();
 
-    // let vga_buffer = 0xb8000 as *mut u8;
-    // unsafe {
-    //     *vga_buffer.offset(0) = 'Z' as u8;
-    //     *vga_buffer.offset(1) = 0xa;
-    // }
+    let vga_buffer = 0xb8000 as *mut u8;
+    unsafe {
+        *vga_buffer.offset(0) = 'Z' as u8;
+        *vga_buffer.offset(1) = 0xa;
+    }
 
 
     // loop {}
