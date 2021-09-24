@@ -1,5 +1,5 @@
 [package]
-name = "op-system-rs"
+name = "op_system_rs"
 version = "0.1.0"
 authors = ["Nikolay <nikolay.bykovsky@gmail.com>"]
 edition = "2018"
