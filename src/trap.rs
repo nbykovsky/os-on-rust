@@ -1,13 +1,11 @@
 #![allow(unused_assignments, dead_code)]
 #![no_std] // don't link the Rust standard library
 #![no_main] // disable all Rust-level entry points
-// #![feature(lang_items, llvm_asm)]
 
 use core::panic::PanicInfo;
 
 const IDT_START_ADDRESS: u64 = 0x11000;
 const IDT_REGISTER_ADDRESS: u64 = 0x11800;
-
 
 extern "C" {
     fn vector0();
@@ -37,6 +35,14 @@ extern "C" {
     fn read_isr() -> u8;
 }
 
+// Example of using ASM
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// fn vector0_rs() {
+//     unsafe {
+//         asm!("push 0", "push 0");
+//     }
+// }
+
 #[repr(packed)]
 struct IdtEntry {
     low: u16,
@@ -45,22 +51,19 @@ struct IdtEntry {
     attr: u8,
     mid: u16,
     high: u32,
-    res1: u32
+    res1: u32,
 }
-
 
 #[repr(packed)]
 struct IdtPrt {
     limit: u16,
-    addr: u64
+    addr: u64,
 }
 
 fn init_idt_entry(index: usize, handler_address: u64) {
     const IDT_DESCRIPTOR_SIZE: u64 = 16;
 
-    let descriptor_address = IDT_START_ADDRESS + (
-        IDT_DESCRIPTOR_SIZE * (index as u64)
-    );
+    let descriptor_address = IDT_START_ADDRESS + (IDT_DESCRIPTOR_SIZE * (index as u64));
 
     unsafe {
         *((descriptor_address) as *mut IdtEntry) = IdtEntry {
@@ -70,16 +73,13 @@ fn init_idt_entry(index: usize, handler_address: u64) {
             attr: 0x8e,
             mid: (handler_address >> 16) as u16,
             high: (handler_address >> 32) as u32,
-            res1: 0
+            res1: 0,
         }
     }
-
-
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn create_idt_table() {
-
     const IDT_DESCRIPTORS_AMOUNT: usize = 256;
 
     for index in 0..IDT_DESCRIPTORS_AMOUNT {
@@ -108,17 +108,15 @@ pub fn create_idt_table() {
 
     unsafe {
         *(IDT_REGISTER_ADDRESS as *mut IdtPrt) = IdtPrt {
-            limit: (8* IDT_DESCRIPTORS_AMOUNT) as u16,
-            addr: IDT_START_ADDRESS
+            limit: (8 * IDT_DESCRIPTORS_AMOUNT) as u16,
+            addr: IDT_START_ADDRESS,
         }
     }
     unsafe {
         load_idt(&*(IDT_REGISTER_ADDRESS as *mut IdtPrt));
     }
     // unsafe {llvm_asm!("lidt ($0)" :: "r" (IDT_REGISTER_ADDRESS));}
-
 }
-
 
 #[repr(C, packed)]
 pub struct TrapFrame {
@@ -143,32 +141,20 @@ pub struct TrapFrame {
     cs: i64,
     rflags: i64,
     rsp: i64,
-    ss: i64
+    ss: i64,
 }
-
 
 #[no_mangle]
 pub extern "C" fn handler(tf: &TrapFrame) {
-    
     match tf.trapno {
-        32 => unsafe {eoi()},
+        32 => unsafe { eoi() },
         39 => {
-            
-            let isr_value = unsafe {read_isr()};
+            let isr_value = unsafe { read_isr() };
 
-            if isr_value&(1<<7)!=0 {
-                unsafe {eoi()};
+            if isr_value & (1 << 7) != 0 {
+                unsafe { eoi() };
             }
         }
-        _ => loop {}
+        _ => loop {},
     }
-    
-}
-
-
-// This function is called on panic.
-#[panic_handler]
-#[cfg(not(test))] 
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
 }
