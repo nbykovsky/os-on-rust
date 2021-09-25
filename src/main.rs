@@ -1,5 +1,5 @@
 #![feature(asm)]
-// #![allow(unused_assignments, dead_code)]
+#![allow(unused_assignments, dead_code)]
 #![no_std] // don't link the Rust standard library
 #![no_main] // disable all Rust-level entry points
             // use op_system_rs::trap;
