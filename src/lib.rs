@@ -6,3 +6,9 @@ extern "C" {
     fn memcpy(dst: *mut u8, src: *const u8, size: usize);
     fn memcmp(src1: *const u8, src2: *const u8, size: usize);
 }
+
+
+fn tst() {
+
+    format_args!("{}",1);
+}
